@@ -492,29 +492,33 @@ const insuri = require('./functions/show-suridetail');
     // Hiển thị bài viết tại trang chủ
     router.post('/home_community', (req, res) => {
 
-        console.log("Ok");
-
         const skip = parseInt(req.body.skip);
 
-        insuri.showSuri_community(skip)
+        if(skip < 0){
+            res.status(400).json({message: "Invalid Request !"})
+        }else{
+            insuri.showSuri_community(skip)
 
             .then(result => res.json(result))
 
             .catch(err => res.status(err.status).json({message: err.message}));
+        }   
 
     });
 
     router.post('/home_fix', (req, res) => {
 
-        console.log("Ok");
-
         const skip = parseInt(req.body.skip);
 
-        insuri.showSuri_fix(skip)
+        if(skip < 0){
+            res.status(400).json({message: "Invalid Request !"});
+        }else{
+            insuri.showSuri_fix(skip)
 
             .then(result => res.json(result))
 
             .catch(err => res.status(err.status).json({message: err.message}));
+        }
 
     });
 

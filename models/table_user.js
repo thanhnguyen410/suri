@@ -1,8 +1,7 @@
 'use strict';
+const mongoose = require("./connect");
 
-const mongoose = require('mongoose');
-
-const Schema = mongoose.Schema;
+const Schema = require("mongoose/lib/schema");
 
 // table user
 const suriUserSchema = mongoose.Schema({
@@ -26,9 +25,4 @@ const suriUserSchema = mongoose.Schema({
 });
 
 mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://192.168.1.14:27017/suri_db');
-// const connect = require ('./connect');
-// connect.Connect_to();
-
-// const user = mongoose.model('user', userSchema);
 module.exports = mongoose.model('suriuser', suriUserSchema);

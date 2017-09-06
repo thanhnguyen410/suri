@@ -1,11 +1,12 @@
 'use strict';
-
-exports.Connect_to = () =>
-    new Promise (() => {
-        mongoose.Promise = global.Promise;
-        mongoose.connect('mongodb://192.168.1.14:27017/suri_db');
-    });
-
-
-
-
+const mongoose = require('mongoose');
+//khai bao tk mk cua server
+// const options = {
+//    user: "suriteam",
+//    pass: "finger123",
+//    auth: {
+//       authdb: 'admin'
+//    }
+// };
+mongoose.connect('mongodb://192.168.1.14:27017/suri_db');
+module.exports = mongoose;

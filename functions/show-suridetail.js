@@ -9,15 +9,15 @@ exports.showSuri_community = (skip) =>
 
         suri.find({},{"__v" : 0})
 
-            .limit(10)
+        .limit(3)
 
-            .skip(10 * skip)
+        .skip(3 * skip)
 
-            .populate({path: "user_id", select: "name"})
+        .populate({path: "user_id", select: "name"})
 
-            .then(suri => resolve(suri))
+        .then(suri => resolve(suri))
 
-            .catch(err => reject({status: 500, message: "Internal Server Error !"}));
+        .catch(err => reject({status: 500, message: "Internal Server Error !"}));
 
     });
 

@@ -8,6 +8,7 @@ const replycommentSchema = mongoose.Schema({
 
     comment_id				: {type: mongoose.Schema.ObjectId, ref: 'comment'},
     user_id                 : {type: mongoose.Schema.ObjectId, ref: 'suriuser'},
+    suri_id					: {type: mongoose.Schema.ObjectId, ref: 'suri'},
     code_reply				: String,
     status      			: String,
     name  		            : String,

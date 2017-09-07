@@ -1,6 +1,9 @@
 const suri = require('../models/table_suri');
+const comment = require('../models/table_comment');
+const reply_comment = require('../models/table_reply_comment');
 const bcrypt = require('bcryptjs');
-
+let ObjectId = require('mongodb').ObjectId;
+// const userid_magic = ObjectId("001001010101010101010111");
 
 // add a Suri in fix Tab
 
@@ -43,7 +46,7 @@ exports.updateSuri_fix = (suri_id, status, description) =>
 
     new Promise((resolve, reject) => {
         console.log(suri_id+" "+ status +" "+ description);
-        let ObjectId = require("mongodb").ObjectId;
+        // let ObjectId = require("mongodb").ObjectId;
 
         suri.find({"_id" : ObjectId(suri_id)})
 
@@ -75,7 +78,6 @@ exports.insertSuri_community = (userId, status, description, name, code) =>
         const d = new Date();
         const timeStamp = d.getTime();
         const newSuri = new suri({
-
             user_id					: userId,
             status					: status,
             description             : description,
@@ -108,7 +110,7 @@ exports.updateSuri_community = (suri_id, status, description, name, code) =>
 
     new Promise((resolve, reject) => {
         console.log(suri_id+" "+ status +" "+ description +" "+ name);
-        let ObjectId = require("mongodb").ObjectId;
+        // let ObjectId = require("mongodb").ObjectId;
 
         suri.find({"_id" : ObjectId(suri_id)})
 
@@ -140,6 +142,71 @@ exports.updateSuri_community = (suri_id, status, description, name, code) =>
 
     });
 
+exports.deleteSuri = (suri_id, code_delete) => 
+
+    new Promise((resolve, reject) => {
+        console.log(suri_id);
+
+        suri.find({"_id" : ObjectId(suri_id)})
+
+        .then(su => {
+            if(su.length === 0){
+                reject({status: 400, message: "Suri not found !"});
+            }else{
+                return su[0];
+            }
+        })
+
+        .then(s => {
+
+            console.log(s.user_id);
+            if(s.user_id == "001001010101010101010111"){
+                const code_suri = s.code;
+                console.log(code_suri);
+
+                if(code_delete === code_suri){
+                    reply_comment.remove({"suri_id": ObjectId(suri_id)})
+
+                    .then(() => {
+                        comment.remove({"suri_id" : ObjectId(suri_id)})
+
+                        .then(() => {
+                            s.remove()
+                            .then(() => {
+                                resolve({status:200, message: "Suri was deleted !"})
+                            })
+                        })
+                    })
+
+                }else{
+                    reject({status:201, message: "Wrong Code !!!"});
+                }
+
+            }else{
+                reply_comment.remove({"suri_id": ObjectId(suri_id)})
+
+                .then(() => {
+                    comment.remove({"suri_id" : ObjectId(suri_id)})
+
+                    .then(() => {
+                        s.remove()
+
+                        .then(() => {
+                            resolve({status:200, message: "Suri was deleted !"})
+                        })
+                    })
+                })
+            }
+        })
+
+        .catch(err => {
+            reject({status:500, message: "Internal Server Error !"});
+        })
+
+
+    })
+
+
 // insert suri
 exports.uploadsuri = (suri_id, image) =>
 
@@ -147,8 +214,8 @@ exports.uploadsuri = (suri_id, image) =>
 
         console.log(suri_id);
 
-        let ObjectId;
-        ObjectId = require("mongodb").ObjectID;
+        // let ObjectId;
+        // ObjectId = require("mongodb").ObjectID;
 
         suri.find({_id: ObjectId(suri_id)})
             .populate("suri")
@@ -168,7 +235,6 @@ exports.uploadsuri = (suri_id, image) =>
             .then(suriPush => {
                 suriPush.images.push(image);
                 suriPush.save();
-
 
                 resolve({status: 200,  message: "uploaded" });
 

@@ -79,8 +79,10 @@ exports.showComment_InSuri = (suri_id, skip) =>
             .populate({
                 path: "rep_comment", select: "_id name status create_at"
             })
-            .limit(1)
-            .skip((1*skip))
+            
+            .limit(3)
+
+            .skip((3*skip))
 
             .then(get_comments => {
                 if(get_comments.length === 0){

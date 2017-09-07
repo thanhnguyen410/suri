@@ -10,13 +10,9 @@ exports.commentDetail = (comment_id) =>
 
 		let ObjectId = require("mongodb").ObjectId;
 
-		comment.find({
-			"_id" : ObjectId(comment_id)
-		}, {
-			"_id" : 0, "code_comment" : 0, "__v":0
-		})
+		comment.find({"_id" : ObjectId(comment_id)})
 
-		.populate("rep_comment", "status name create_at")
+		.populate("rep_comment", "status name create_at code_reply")
 
 		.then(comments => {
 			if(comments.length === 0){
@@ -31,9 +27,7 @@ exports.commentDetail = (comment_id) =>
 		})
 
 		.catch(err => reject({status: 500, message: "Lỗi Server"}));
-	});
-
-
+	}); 
 
 exports.addComment = (user_id, suri_id, status, code_comment, name ) => 
 
@@ -67,10 +61,8 @@ exports.addComment = (user_id, suri_id, status, code_comment, name ) =>
 			suri.findByIdAndUpdate(
 				suri_id,
 				{$set: {"number_comment" : number_cmt + 1}},
-				{safe: true, upsert: true, new: true},
-				function(err, model){
-					console.log(err);
-				}
+				// {safe: true, upsert: true, new: true},
+				function(err, model){}
 			);
 
 		})
@@ -129,7 +121,7 @@ exports.deleteComment = (comment_id, code_comment, suri_id) =>
 			});
 		}
 
-		displayNumbercomment();
+		// displayNumbercomment();
 
 		console.log("OK");
 
@@ -146,40 +138,73 @@ exports.deleteComment = (comment_id, code_comment, suri_id) =>
 		})
 
 		.then(c => {
-			const code = c.code_comment;
-			const id_cmt = c._id;
+			console.log(c.user_id);
+			var code = c.code_comment;
+			var id_cmt = c._id;
+			displayNumbercomment();
+			if(c.user_id == "001001010101010101010111"){
 
-			console.log(code+" "+id_cmt);
+				if(code_comment === code){
 
-			if(code_comment === code){
+					console.log("FUCK 0")
 
-				c.remove()
-
-				.then(() => {
 					suri.findByIdAndUpdate(
 						suri_id,
 						{$set: {"number_comment" : number_cmt_d - 1}},
 						{safe: true, upsert: true, new: true},
-						function(err, model){
-							console.log(err);
-						}
-					)
-				})
+						function(err, model){}
+					);
+					// .then(() => {resolve({status: 300, message: "delete comment in suri suscessfully !"})});
 
-				.then(() => {
-						
-					rep_comment.remove({"comment_id" : ObjectId(id_cmt)}) // Delete all reply comment in comment current
- 
-					.then(() => {
-						resolve({status: 200, message: "Đã xóa !" });
-					})
-				})
+					// .then(() => {
 
+						rep_comment.remove({"comment_id" : ObjectId(id_cmt)})
+
+						.then(() => {
+
+							c.remove()
+
+							.then(() => {
+								resolve({status: 200, message: "Đã xóa !" });
+							})
+						})
+					// })
+
+				}else{
+
+					reject({status: 401, message: 'Sai mã code !'});
+
+				}
 			}else{
 
-				reject({status: 401, message: 'Sai mã code !'});
+				if(code_comment === "0000"){
+					console.log("FUCK");
 
+					suri.findByIdAndUpdate(
+						suri_id,
+						{$set: {"number_comment" : number_cmt_d - 1}},
+						{safe: true, upsert: true, new: true},
+						function(err, model){}
+					);
+
+					rep_comment.remove({"comment_id" : ObjectId(id_cmt)})
+
+					.then(() => {
+
+						c.remove()
+
+						.then(() => {
+							resolve({status: 200, message: "Đã xóa !" });
+						})
+					})
+
+				}else{
+
+					reject({status: 401, message: 'Sai mã code !'});
+
+				}
 			}
+
 		})
 
 		.catch(err => reject({status: 500, message: "Lỗi Server !"}));

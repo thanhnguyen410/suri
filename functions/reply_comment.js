@@ -4,18 +4,19 @@ const rep_comment = new require('../models/table_reply_comment');
 
 const comment = new require('../models/table_comment');
 
-exports.addRepComment = (comment_id, user_id, status, code_reply, name) => 
+exports.addRepComment = (comment_id, user_id, suri_id, status, code_reply, name) => 
 
 	new Promise((resolve, reject) => {
 		const d = new Date();
 
 		const timeStamp = d.getTime();
 
-		console.log(comment_id+" "+user_id+" "+status+" "+code_reply+" "+name);
+		console.log(comment_id+" "+user_id+"  "+suri_id+" "+status+" "+code_reply+" "+name);
 
 		const newRepComment = new rep_comment({
 			comment_id : comment_id,
 			user_id    : user_id,
+			suri_id	   : suri_id,
 			status     : status,
 			code_reply : code_reply,
 			name       : name,

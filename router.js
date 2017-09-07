@@ -8,18 +8,19 @@ const loginSuri = require('./functions/login');
 const insertSuri = require('./functions/insert_suri');
 const outputSuri = require('./functions/output_suri');
 // const formidable = require('formidable');
-// const path = require('path');
-// const uploadDir = path.join('./uploads/');
+const path = require('path');
+const uploadDir = path.join('./uploads/');
+var fs = require('fs');
 const comments = require('./functions/comments');
 const rep_comment = require('./functions/reply_comment');
 const insuri = require('./functions/show-suridetail'); 
  
-    module.exports = router => {
+module.exports = router => {
     router.get('/', (req, res) => res.end('Welcome to suri !'));
     /*-------------------------------------------------------------------
                                     User
     --------------------------------------------------------------------*/
-// login
+    // login
     router.post('/loginsuri', (req, res) => {
         const credentials = auth(req);
         if (!credentials) {
@@ -76,8 +77,11 @@ const insuri = require('./functions/show-suridetail');
 
 
     /*-------------------------------------------------------------------
-                                    Profile
+                                    Profile and Repair
     --------------------------------------------------------------------*/
+
+
+    // Hiển thị chi tiết thông tin User
     router.post('/showprofile', (req, res) => {
         const user_id = req.body.user_id;
 
@@ -96,6 +100,7 @@ const insuri = require('./functions/show-suridetail');
         }
     });
 
+    // Đăng ký trở thành thợ sửa chữa
     router.post('/become_prepaire', (req,res) => {
         const user_id = req.body.user_id;
         const state = req.body.state;
@@ -117,6 +122,25 @@ const insuri = require('./functions/show-suridetail');
         }
 
     });
+
+    // Hiển thị danh sách thợ sửa
+
+    router.post('/list_repairer', (req, res) => {
+
+        const skip = parseInt(req.body.skip);
+
+        if(skip < 0){
+            res.status(400).json({message: "Invalid Request !"})
+        }else{
+            profile.listRepairer(skip)
+
+            .then(result => res.json(result))
+
+            .catch(err => res.status(err.status).json({message: err.message}));
+        }   
+
+    });
+
 
     /*-------------------------------------------------------------------
                                     Register
@@ -241,7 +265,6 @@ const insuri = require('./functions/show-suridetail');
         const user_id = req.body.user_id;
         const code = req.body.code;
 
-
         if (!user_id || !code || !user_id.trim() || !code.trim()) {
 
             res.status(400).json({message: 'Invalid Request !'});
@@ -289,7 +312,7 @@ const insuri = require('./functions/show-suridetail');
                                 Suri (Post)
     --------------------------------------------------------------------*/
 
-    // insert suri
+    // insert suri tab bài viết
     router.post('/insertsuri_fix', (req, res) => {
 
         const user_id = req.body.user_id;
@@ -322,6 +345,8 @@ const insuri = require('./functions/show-suridetail');
         }
     });
 
+    // Update Suri tab Bài viết
+
     router.post('/updatesuri_fix', (req, res) => {
         const suri_id = req.body.suri_id;
         const status = req.body.status;
@@ -341,14 +366,22 @@ const insuri = require('./functions/show-suridetail');
                 })
         }
     });
-// Insert Suri in Communiti
+
+
+    // Insert Suri in Communiti
     router.post('/insertsuri_com', (req, res) => {
 
-        const user_id = req.body.user_id;
+        let user_id = req.body.user_id;
         const status = req.body.status;
         const description = req.body.description;
         const name = req.body.name;
         const code = req.body.code;
+
+        if(!user_id){
+            user_id = "001001010101010101010111";
+        } 
+
+        console.log(user_id);
 
         if (!user_id || !status || !description || !name || !code || !user_id.trim() || !status.trim() || !description.trim() || !name.trim() || !code.trim()) {
 
@@ -375,6 +408,7 @@ const insuri = require('./functions/show-suridetail');
         }
     });
 
+    // Update suri tab Cộng đồng
     router.post('/updatesuri_com', (req, res) => {
         const suri_id = req.body.suri_id;
         const status = req.body.status;
@@ -397,12 +431,42 @@ const insuri = require('./functions/show-suridetail');
         }
     });
 
+
+    router.post('/delete_suri', (req, res) => {
+        const suri_id = req.body.suri_id;
+        const code_delete = req.body.code_delete;
+
+        if(!suri_id){
+            res.status(400).json({message: "Invalid Request !"});
+        }else{
+            insertSuri.deleteSuri(suri_id, code_delete)
+
+            .then(result => {
+                res.status(result.status).json({message: result.message});
+            })
+
+            .catch(err => {
+                res.status(err.status).json({message: err.message});
+            })
+        }
+
+    });
+
     router.post('/upload_suri', (req, res) => {
 
         uploadImage(req, res);
 
     });
 
+    // get image
+
+    router.get('/uploads/:file', function (req, res){
+            file = req.params.file;
+            var img = fs.readFileSync(uploadDir + file);
+            res.writeHead(200, {'Content-Type': 'image/jpg' });
+            res.end(img, 'binary');
+
+    });
 
     function uploadImage(req, res) { // This is just for my Controller same as app.post(url, function(req,res,next) {....
         const form = new formidable.IncomingForm();
@@ -544,15 +608,19 @@ const insuri = require('./functions/show-suridetail');
         }
 
     });
-
+ 
     // Thêm bình luận
 
     router.post('/addcomment', (req, res) => {
         const user_id = req.body.user_id;
         const suri_id = req.body.suri_id;
         const status = req.body.status;
-        const code_comment = req.body.code_comment;
+        let code_comment = req.body.code_comment;
         const name = req.body.name;
+
+        if(!code_comment){
+            code_comment = "0000";
+        }
 
         console.log(user_id + " " + suri_id + " " + status + " " + code_comment + " " + name);
 
@@ -629,16 +697,17 @@ const insuri = require('./functions/show-suridetail');
     router.post('/addrepcomment', (req, res) => {
         const comment_id = req.body.comment_id;
         const user_id = req.body.user_id;
+        const suri_id = req.body.suri_id;
         const status = req.body.status;
         const code_reply = req.body.code_reply;
         const name = req.body.name;
 
-        console.log(comment_id + " " + user_id + " " + status + " " + code_reply + " " + name);
+        console.log(comment_id + " " + user_id + " " + suri_id + " " + status + " " + code_reply + " " + name);
 
-        if (!comment_id || !user_id || !status || !code_reply || !name) {
+        if (!comment_id || !user_id || !suri_id || !status || !code_reply || !name) {
             res.status(400).json({message: "Dữ liệu không tồn tại !"});
         } else {
-            rep_comment.addRepComment(comment_id, user_id, status, code_reply, name)
+            rep_comment.addRepComment(comment_id, user_id, suri_id, status, code_reply, name)
 
                 .then(result => {
                     res.status(result.status).json({message: result.message, rep_cmt: result.rep_cmt})

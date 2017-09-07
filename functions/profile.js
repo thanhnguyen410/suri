@@ -2,6 +2,8 @@
 
 const user = require('../models/table_user');
 
+
+// Hiển thị thông tin user
 exports.getProfile = (user_id) =>
 
     new Promise((resolve,reject) => {
@@ -27,7 +29,7 @@ exports.getProfile = (user_id) =>
     });
 
 
-//Thành viên trở thành thợ sửa
+//Đăng ký thành thợ sửa
 exports.becomeRepaire = (user_id, state, fix_job, description) =>
     new Promise((resolve, reject) => {
         let ObjectId = require("mongodb").ObjectId;
@@ -41,7 +43,7 @@ exports.becomeRepaire = (user_id, state, fix_job, description) =>
                     return us[0];
                 }
             })
-
+ 
             .then(u => {
                 const usertype = u.user_type;
                 if(usertype === "0"){ // Kiểm tra xem có phải là thợ sửa hay chưa
@@ -58,5 +60,23 @@ exports.becomeRepaire = (user_id, state, fix_job, description) =>
             .catch(err => {
                 reject({status: 500, message : "Internal Server Error !"})
             })
+
+    });
+
+// Hiển thị danh sách thợ sửa
+
+exports.listRepairer = (skip) =>
+
+    new Promise((resolve, reject) => {
+
+        user.find({"user_type" : "1"},{"__v" : 0})
+
+        .limit(2)
+
+        .skip(2 * skip)
+
+        .then(users => resolve(users))
+
+        .catch(err => reject({status: 500, message: "Internal Server Error !"}));
 
     });

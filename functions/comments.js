@@ -32,44 +32,47 @@ exports.commentDetail = (comment_id) =>
 exports.addComment = (user_id, suri_id, status, code_comment, name ) => 
 
 	new Promise((resolve, reject) => {
-		function displayNumbercomment(){
-			let ObjectId = require("mongodb").ObjectId;
-			comment.count({"suri_id" : ObjectId(suri_id)}, function(error, numOfDocs){
-		  		global.number_cmt = numOfDocs;
-			});
-		}
 
-		const d = new Date();
-		const timeStamp = d.getTime();
-		displayNumbercomment();
-		console.log("Done !");
-		const newComment = new comment({ 
-			
-			user_id     : user_id,
-			suri_id     : suri_id,
-			status      : status,
-			code_comment: code_comment,
-			name        : name,
-			create_at   : timeStamp
+		let ObjectId = require("mongodb").ObjectId;
 
-		});
-
-		newComment.save()
-
-		.then(() => {
-
-			suri.findByIdAndUpdate(
-				suri_id,
-				{$set: {"number_comment" : number_cmt + 1}},
-				// {safe: true, upsert: true, new: true},
-				function(err, model){}
-			);
-
+		let number_cmt;
+		comment.count({"suri_id" : ObjectId(suri_id)}, function(error, count){
+			number_cmt = count;
+			console.log("Number CMT: " + number_cmt);
 		})
 
-		.then(() => resolve({status: 201, message: 'Comment created suscessfully !'}))
+		.then(() => {
+			const d = new Date();
+			const timeStamp = d.getTime();
+			const newComment = new comment({ 
 
-		.catch(err => reject({status: 500, message: 'Internal Server Error !'}));
+				user_id     : user_id,
+				suri_id     : suri_id,
+				status      : status,
+				code_comment: code_comment,
+				name        : name,
+				create_at   : timeStamp
+
+			});
+
+			newComment.save()
+
+			.then(() => {
+
+				suri.findByIdAndUpdate(
+					suri_id,
+					{$set: {"number_comment" : number_cmt + 1}},
+					{safe: true, upsert: true, new: true},
+					function(err, model){}
+				)
+
+			})
+
+			.then(() => resolve({status: 201, message: "Comment created suscessfully !"}))
+
+			.catch(err => reject({status: 500, message: "Internal Server Error !"}));
+		})
+		
 	});
 
 exports.updateComment = (comment_id, code_comment, status) => 
@@ -112,51 +115,75 @@ exports.deleteComment = (comment_id, code_comment, suri_id) =>
 
 	new Promise ((resolve, reject) => {
 
-		console.log(suri_id + " " + comment_id + " " + code_comment);
-
 		let ObjectId = require("mongodb").ObjectId;
-		function displayNumbercomment(){
-			comment.count({"suri_id" : ObjectId(suri_id)}, function(error, numOfDocs){
-		  		global.number_cmt_d = numOfDocs;
-			});
-		}
 
-		// displayNumbercomment();
-
-		console.log("OK");
-
-		comment.find({
-			"_id" : ObjectId(comment_id)
+		let number_cmt;
+		comment.count({"suri_id" : ObjectId(suri_id)}, function(error, count){
+			number_cmt = count;
+			console.log("Number CMT: " + number_cmt);
 		})
 
-		.then(co => {
-			if(co.length === 0){
-				reject({status: 404, message: "Không tìm thấy bình luận !"});
-			}else{
-				return co[0];	
-			}
-		})
+		.then(() => {
+			comment.find({
+				"_id" : ObjectId(comment_id)
+			})
 
-		.then(c => {
-			console.log(c.user_id);
-			var code = c.code_comment;
-			var id_cmt = c._id;
-			displayNumbercomment();
-			if(c.user_id == "001001010101010101010111"){
+			.then(co => {
+				if(co.length === 0){
+					reject({status: 404, message: "Không tìm thấy bình luận !"});
+				}else{
+					return co[0];	
+				}
+			})
 
-				if(code_comment === code){
+			.then(c => {
+				console.log(c.user_id);
+				var code = c.code_comment;
+				var id_cmt = c._id;
+				if(c.user_id == "001001010101010101010111"){
 
-					console.log("FUCK 0")
+					if(code_comment === code){
 
-					suri.findByIdAndUpdate(
-						suri_id,
-						{$set: {"number_comment" : number_cmt_d - 1}},
-						{safe: true, upsert: true, new: true},
-						function(err, model){}
-					);
-					// .then(() => {resolve({status: 300, message: "delete comment in suri suscessfully !"})});
+						console.log("FUCK 0")
 
-					// .then(() => {
+						suri.findByIdAndUpdate(
+							suri_id,
+							{$set: {"number_comment" : number_cmt - 1}},
+							{safe: true, upsert: true, new: true},
+							function(err, model){}
+						);
+						// .then(() => {resolve({status: 300, message: "delete comment in suri suscessfully !"})});
+
+						// .then(() => {
+
+							rep_comment.remove({"comment_id" : ObjectId(id_cmt)})
+
+							.then(() => {
+
+								c.remove()
+
+								.then(() => {
+									resolve({status: 200, message: "Đã xóa !" });
+								})
+							})
+						// })
+
+					}else{
+
+						reject({status: 401, message: 'Sai mã code !'});
+
+					}
+				}else{
+
+					if(code_comment === "0000"){
+						console.log("FUCK");
+
+						suri.findByIdAndUpdate(
+							suri_id,
+							{$set: {"number_comment" : number_cmt - 1}},
+							{safe: true, upsert: true, new: true},
+							function(err, model){}
+						);
 
 						rep_comment.remove({"comment_id" : ObjectId(id_cmt)})
 
@@ -168,45 +195,18 @@ exports.deleteComment = (comment_id, code_comment, suri_id) =>
 								resolve({status: 200, message: "Đã xóa !" });
 							})
 						})
-					// })
 
-				}else{
+					}else{
 
-					reject({status: 401, message: 'Sai mã code !'});
+						reject({status: 401, message: 'Sai mã code !'});
 
+					}
 				}
-			}else{
 
-				if(code_comment === "0000"){
-					console.log("FUCK");
+			})
 
-					suri.findByIdAndUpdate(
-						suri_id,
-						{$set: {"number_comment" : number_cmt_d - 1}},
-						{safe: true, upsert: true, new: true},
-						function(err, model){}
-					);
-
-					rep_comment.remove({"comment_id" : ObjectId(id_cmt)})
-
-					.then(() => {
-
-						c.remove()
-
-						.then(() => {
-							resolve({status: 200, message: "Đã xóa !" });
-						})
-					})
-
-				}else{
-
-					reject({status: 401, message: 'Sai mã code !'});
-
-				}
-			}
-
+			
 		})
-
 		.catch(err => reject({status: 500, message: "Lỗi Server !"}));
 
 	});

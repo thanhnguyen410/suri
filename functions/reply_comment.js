@@ -107,19 +107,40 @@ exports.deleteRepComment = (rep_comment_id, code_reply) =>
 			const code = comment_one.code_reply;
 			const cmt_id = comment_one._id;
 
-			if(code_reply === code){
-				comment_one.remove();
+			if(comment_one.user_id == "001001010101010101010111"){
+				if(code_reply === code){
 
-				console.log("OK");
+					console.log("OK 1");
 
-				comment.update({"rep_comment": ObjectId(cmt_id)}, {$pullAll: {rep_comment: [ObjectId(cmt_id)]}})
+					comment.update({"rep_comment": ObjectId(cmt_id)}, {$pullAll: {rep_comment: [ObjectId(cmt_id)]}})
 
-				.then(() => {
-					resolve({status: 200, message: "Đã xóa !"});
-				})
+					.then(() => {
+						comment_one.remove()
 
+						.then(() => {
+							resolve({status: 200, message: "Đã xóa !"});
+						})
+					})
+
+				}else{
+					reject({status: 401, message: "Mã code sai !"});
+				}
 			}else{
-				reject({status: 401, message: "Mã code sai !"});
+				if(code_reply === "0000"){
+					console.log("OK 2");
+
+					comment.update({"rep_comment": ObjectId(cmt_id)}, {$pullAll: {rep_comment: [ObjectId(cmt_id)]}})
+
+					.then(() => {
+						comment_one.remove()
+
+						.then(() => {
+							resolve({status: 200, message: "Đã xóa !"});
+						})
+					})
+				}else{
+					reject({status: 401, message: "Mã code sai !"});
+				}
 			}
 
 		})

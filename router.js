@@ -379,7 +379,11 @@ module.exports = router => {
 
         if(!user_id){
             user_id = "001001010101010101010111";
-        } 
+        };
+
+        if(!code){
+            code = "0000";
+        };
 
         console.log(user_id);
 
@@ -612,15 +616,20 @@ module.exports = router => {
     // Thêm bình luận
 
     router.post('/addcomment', (req, res) => {
-        const user_id = req.body.user_id;
+        let user_id = req.body.user_id;
         const suri_id = req.body.suri_id;
         const status = req.body.status;
         let code_comment = req.body.code_comment;
         const name = req.body.name;
 
+        if(!user_id){
+            user_id = "001001010101010101010111";
+        }
         if(!code_comment){
             code_comment = "0000";
         }
+
+        console.log(user_id + code_comment);
 
         console.log(user_id + " " + suri_id + " " + status + " " + code_comment + " " + name);
 
@@ -696,13 +705,18 @@ module.exports = router => {
 
     router.post('/addrepcomment', (req, res) => {
         const comment_id = req.body.comment_id;
-        const user_id = req.body.user_id;
+        let user_id = req.body.user_id;
         const suri_id = req.body.suri_id;
         const status = req.body.status;
-        const code_reply = req.body.code_reply;
+        let code_reply = req.body.code_reply;
         const name = req.body.name;
 
-        console.log(comment_id + " " + user_id + " " + suri_id + " " + status + " " + code_reply + " " + name);
+        if(!user_id){
+            user_id = "001001010101010101010111";
+        }
+        if(!code_reply){
+            code_reply = "0000";
+        }
 
         if (!comment_id || !user_id || !suri_id || !status || !code_reply || !name) {
             res.status(400).json({message: "Dữ liệu không tồn tại !"});
@@ -746,7 +760,11 @@ module.exports = router => {
 
     router.post('/deleterepcomment', (req, res) => {
         const rep_comment_id = req.body.rep_comment_id;
-        const code_reply = req.body.code_reply;
+        let code_reply = req.body.code_reply;
+
+        if(!code_reply){
+            code_reply = "0000";
+        }
 
         console.log(rep_comment_id + " " + code_reply);
 
